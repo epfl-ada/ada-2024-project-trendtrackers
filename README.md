@@ -1,7 +1,6 @@
-# Title: to find
+# ML Driven Targeting for HIV-1 inhibition
 
 ## [OPTIONAL] create conda environment
-conda create -y -n ada python=3.11 scipy pandas numpy matplotlib=3.7.2
 ## install requirements
 pip install -r pip_requirements.txt
 
@@ -46,4 +45,5 @@ In parallel, a predictive machine learning would be developed in order to predic
 ## Questions for the TA:
 
 - Are the current results of clustering promising or do we have to finetune our clustering process?
+- As the data for HIV is quite small, should we find some external dataset for validating our model?
 
