@@ -31,7 +31,7 @@ Note:
 
 ## Abstract
 
-HIV-1 continues to be a significant global health challenge, and developing effective inhibitors for this virus is a critical yet complex goal for both industry and academia. Our objective is to identify families of ligands with shared properties that inhibit HIV-1, facilitating the design of novel, targeted inhibitors. To achieve this, we plan to cluster these ligands based on their structural characteristics. Additionally, to efficiently evaluate the binding affinities of potential new ligands, we aim to use machine learning to predict their binding affinity to HIV-1. This in silico approach offers a faster and more cost-effective alternative to traditional experimental testing, accelerating the development of promising candidates.
+HIV-1 remains a significant global health challenge, and developing effective inhibitors for this virus is a crucial yet complex goal for both industry and academia. Our objective is to identify families of ligands with shared properties that can inhibit HIV-1, helping the design of novel, targeted inhibitors. To achieve this, we plan to use cluster algorithms to separate the ligands based on their structural and chemical characteristics. Additionally, we aim to use machine learning to efficiently predict the binding affinities of new ligands and generate potential new candidates. This in silico approach could provide a faster, more cost-effective alternative to traditional experimental testing, speeding up the development of promising inhibitors.
 
 ## Research questions
 
@@ -39,6 +39,7 @@ HIV-1 continues to be a significant global health challenge, and developing effe
 - Can we find families of ligand that inhibits HIV1 and what are their properties ?
 - Can we predict the affinity of new ligands ?
 - Are the affinity of ligands within the same clusters similar in values ?
+- With the characteristics we obtain from the clusters, can we generate new ligands?
 
 ## Methods
 
@@ -46,7 +47,7 @@ In this project, we aim to apply clustering techniques to explore the properties
 
 ### Clustering
 
-We experimented with various approaches to numerically represent ligands, including generating Morgan fingerprints from SMILES strings with the [RDKit](https://www.rdkit.org/) library and utilising embeddings from the [ChemBERTa](https://huggingface.co/seyonec/ChemBERTa-zinc-base-v1) model. These molecular structure representations are then processed using dimension reduction techniques like PCA, t-SNE and UMAP combined with KMeans to visualise and identify clusters effectively. 
+We experimented with various approaches to numerically represent ligands, including generating Morgan fingerprints from SMILES strings with the [RDKit](https://www.rdkit.org/) library and utilising embeddings from the [ChemBERTa](https://huggingface.co/seyonec/ChemBERTa-zinc-base-v1) model. These molecular structure representations are then processed using dimension reduction techniques like t-SNE and UMAP combined with KMeans to visualise and identify clusters effectively. 
 
 ### Next Steps
 
@@ -55,6 +56,8 @@ Our next steps will involve analysing the properties of each cluster, focusing o
 We will also assess the effectiveness of our clustering methods in forming distinct and meaningful groups that align with observed binding affinities.
 
 In parallel, we plan to develop a predictive machine learning model to estimate binding affinity (inhibitory constant Ki) for a given ligand-protein pair. To encode proteins, we will leverage [ProteinBERT](https://github.com/nadavbra/protein_bert) to extract numerical features. We will experiment with models such as random forests and neural networks to identify the best approach for accurate affinity prediction.
+
+If time permits, we would also explore reverse-engineering ligands by leveraging the prediction power of our machine learning model as a metric, combined with a new generative model. This approach involves generating the structures of optimal ligands with potentially high binding affinity for a given set of targets. The newly generated ligands can then be visualized using ChemDraw or the visualization tools available in [RDKit](https://www.rdkit.org/).
 
 ## Timeline
 
@@ -66,7 +69,7 @@ In parallel, we plan to develop a predictive machine learning model to estimate 
 ## Organisation
 
 - Clustering and visualisation of the properties of clusters: Nithujaa, Leonardo, Emma
-- Predictive Model: Antonin, Sathvik
+- Predictive Model and Generative Model: Antonin, Sathvik
 - Story: Emma, Nithujaa, Leonardo, Antonin, Sathvik
 
 ## Questions for the TA:
