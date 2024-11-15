@@ -331,4 +331,4 @@ def plot_3d_clusters(results, min_index, k, method_name):
     # Display the figure
     fig.show()
 
-    return df, fig
+    return df
