@@ -13,7 +13,7 @@ pip install -r requirements.txt
 
 Note:
 - Make sure to have the zip of the BindingDB dataset ['BindingDB_All_202409_tsv.zip'](https://www.bindingdb.org/rwd/bind/chemsearch/marvin/SDFdownload.jsp?download_file=/bind/downloads/BindingDB_All_202409_tsv.zip) in your repository.
-- Avoid running the jupyter notebook since it takes some time to run (~20 min with decent computer). all visualization should already be loaded.
+- Avoid running the jupyter notebook since it takes some time to run (~20 min with decent computer). All visualization should already be loaded.
 - We recommend using VSCode. The library Plotly is used to create 3D interactive plots, but for some reason, these plots do not render when using Jupyter online. However, they do render properly in VSCode. Other softwares have not been tested. Regardless, saved images of the plots are displayed in the notebook if you are not using VSCode.
 
 ## Project Structure
