@@ -1,8 +1,12 @@
+kaleido==0.2.1
 matplotlib==3.9.2
-numpy==2.0.2
-pandas==2.2.3
-rdkit==2024.3.6
+numpy==1.26.4
+pandas==2.2.2
+pillow==10.4.0
+plotly==5.24.1
+rdkit==2023.9.2
 scikit-learn==1.5.2
-scipy==1.13.0
+scipy==1.13.1
 seaborn==0.13.2
 transformers==4.46.2
+umap-learn==0.5.7

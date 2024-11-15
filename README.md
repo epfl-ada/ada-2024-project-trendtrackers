@@ -10,8 +10,9 @@ cd <repo>
 # Install all the dependencies
 pip install -r requirements.txt
 ```
-Notes:
-- Make sure to have the zip of the BindingDB dataset 'BindingDB_All_202409_tsv.zip' in your repository.
+
+Note:
+- Make sure to have the zip of the BindingDB dataset ['BindingDB_All_202409_tsv.zip'](https://www.bindingdb.org/rwd/bind/chemsearch/marvin/SDFdownload.jsp?download_file=/bind/downloads/BindingDB_All_202409_tsv.zip) in your repository.
 - Avoid running the jupyter notebook since it takes some time to run (~20 min with decent computer). all visualization should already be loaded.
 
 ## Project Structure
@@ -20,7 +21,9 @@ Notes:
 .
 ├── README.md                  # The following README :)
 ├── results.ipynb              # Initial analyses, clustering and visualisations
-├── implementations.py         # Python file with helper functions
+├── src/
+    ├── implementations.py     # Python file with helper functions
+├── test/                      # Test folder - using for saved plots (for now)
 ├── requirements.txt           # Python packages required to run the code
 ├── .gitignore                 # Git ignore file
 ```
@@ -50,7 +53,7 @@ Our next steps will involve analysing the properties of each cluster, focusing o
 
 We will also assess the effectiveness of our clustering methods in forming distinct and meaningful groups that align with observed binding affinities.
 
-In parallel, we plan to develop a predictive machine learning model to estimate binding affinity (inhibitory constant Ki) for a given ligand-protein pair. We will experiment with models such as random forests and neural networks to identify the best approach for accurate affinity prediction.
+In parallel, we plan to develop a predictive machine learning model to estimate binding affinity (inhibitory constant Ki) for a given ligand-protein pair. To encode proteins, we will leverage [ProteinBERT](https://github.com/nadavbra/protein_bert) to extract numerical features. We will experiment with models such as random forests and neural networks to identify the best approach for accurate affinity prediction.
 
 ## Timeline
 
