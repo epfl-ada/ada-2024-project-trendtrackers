@@ -10,6 +10,10 @@ cd <repo>
 # Install all the dependencies
 pip install -r requirements.txt
 ```
+Notes:
+- Make sure to have the zip of the BindingDB dataset 'BindingDB_All_202409_tsv.zip' in your repository.
+- Avoid running the jupyter notebook since it takes some time to run (~20 min with decent computer). all visualization should already be loaded.
+
 ## Project Structure
 
 ```markdown
@@ -65,3 +69,4 @@ In parallel, we plan to develop a predictive machine learning model to estimate 
 
 - Are the current results of clustering promising or do we have to finetune our clustering process?
 - As the data for HIV is quite small, should we find some external dataset for validating our model?
+- Targets can have more than one chain. In the scope of a machine learning model, should we just concatenate the chains together or consider them as separate parameters?
