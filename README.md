@@ -63,8 +63,15 @@ If time permits, we would also explore reverse-engineering ligands by leveraging
 
 - Week 10: More visualisations on the properties and their correlations to check the similarity of the compounds in each cluster (affinity, hydrogen bonds, hydrophobicity, inhibitory effects etc).
 - Week 11: Building, training and testing predictive ML model.
-- Week 12: Test if a ligand family could target the same target with similar affinity values with the predictive model developed.
-- Week 13 and 14: Improve results and work on the website to display our data story.
+- Week 12:
+     * Test if a ligand family could target the same target with similar affinity values with the predictive model developed.
+     * Analyse the properties of each cluster (structure, molecular weight, h-bonds, ...)
+- Week 13:
+     * Setting up the website
+     * Choose the visualisations to show
+     * Begin the text for the datastory        
+- Week 14:
+     * Improve results and work on the website to display our data story.
 
 ## Organisation
 
