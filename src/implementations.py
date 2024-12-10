@@ -2,10 +2,15 @@ import numpy as np
 import pandas as pd
 
 from scipy.stats import entropy
+from scipy.stats import shapiro
+from scipy.stats import mannwhitneyu
+
+
 
 import matplotlib.pyplot as plt
 import seaborn as sns
 from matplotlib.ticker import MaxNLocator
+
 from mpl_toolkits.mplot3d import Axes3D
 import plotly.express as px
 import plotly.graph_objects as go
@@ -13,6 +18,10 @@ import plotly.graph_objects as go
 from sklearn.manifold import TSNE, trustworthiness
 from sklearn.cluster import KMeans, DBSCAN
 from sklearn.metrics import silhouette_score
+from sklearn.preprocessing import MinMaxScaler
+from sklearn.preprocessing import StandardScaler
+from sklearn.feature_selection import f_regression
+
 
 from rdkit import Chem
 from rdkit.Chem import AllChem
@@ -22,6 +31,7 @@ from rdkit.Chem.rdFingerprintGenerator import GetMorganGenerator
 from transformers import AutoTokenizer, AutoModel
 import torch
 import umap
+
 
 
 def generate_fingerprints(smiles_list, radius=3, n_bits=1024):
@@ -332,3 +342,221 @@ def plot_3d_clusters(results, min_index, k, method_name):
     fig.show()
 
     return df
+
+def shapiro_test(data, param, r = 4):
+    '''
+    function that tests if the distribution of the data is normal
+
+    parameters:
+    param(string): name of the column of the dataframe to be tested 
+    '''
+    for i in range(4):
+        stat, p_value = shapiro(data[f'Cluster_{i}'][param])
+
+        print(f"Statistic: {stat}, p-value: {p_value}")
+
+        # Interpret the result
+        if p_value > 0.05:
+            print("Data looks normally distributed (fail to reject H0).")
+        else:
+            print("Data does not look normally distributed (reject H0).")
+
+def mann_whiteney_test(data1, data2,  sent):
+    '''
+    function that tests in a non-parametric way if the differece between the datasets is significant
+
+    parameters:
+    data1(Dataframe): first dataset to be tested
+    data2(Dataframe): second dataset to be tested
+    sent(string): sentnce describing the datasets tested
+    '''
+    stat, p_value = mannwhitneyu(data1, data2, alternative='two-sided')
+    print(f"Statistic: {stat}, p-value: {p_value}")
+
+    if p_value < 0.05:
+        print("Significant difference between", sent)
+    else:
+        print("No significant difference between", sent)
+
+def extract_info_smiles(data):
+    '''
+    function that extracts properties (h_bond acceptor, h_bond donnor, molecular weight, LogP) velues from the SMILES
+
+    parameter:
+    data(Dataframe): dataset of SMILES
+    '''
+    molecular_weights=[]
+    h_bond_donors=[]
+    h_bond_acceptors=[]
+    logP=[]
+
+    
+    for smiles in data['Ligand SMILES']:
+        try:
+            mol = Chem.MolFromSmiles(smiles)  # Create RDKit molecule object
+            if mol:
+                # Calculate properties if SMILES is valid
+                molecular_weights.append(Descriptors.MolWt(mol))
+                h_bond_donors.append(Descriptors.NumHDonors(mol))
+                h_bond_acceptors.append(Descriptors.NumHAcceptors(mol))
+                logP.append(Descriptors.MolLogP(mol))
+            else:
+                # Add None if SMILES is invalid
+                molecular_weights.append(None)
+                h_bond_donors.append(None)
+                h_bond_acceptors.append(None)
+        except Exception as e:
+            # Handle invalid SMILES error by appending None
+            print(f"Error processing SMILES {smiles}: {e}")
+            molecular_weights.append(None)
+            h_bond_donors.append(None)
+            h_bond_acceptors.append(None)
+
+    # Add properties to DataFrame
+    data['Molecular Weight'] = molecular_weights
+    data['H-Bond Donors'] = h_bond_donors
+    data['H-Bond Acceptors'] = h_bond_acceptors
+
+    # Drop rows with any missing values in these new columns
+    data.dropna(subset=['Molecular Weight', 'H-Bond Donors', 'H-Bond Acceptors'], inplace=True)
+
+
+#Targets visualization per clusters
+def clusters_targets(data, ax, title):
+    '''
+    function that create a barplot with top 20 targets of the dataset
+
+    parameter: 
+    data (dataframe): dataset with target names
+    ax: axe of the figure 
+    title(string)
+    '''
+    target_counts = data.groupby('Target Name').size().reset_index(name='Compound Count')
+    target_counts = target_counts.sort_values(by='Compound Count', ascending=False)
+    sns.barplot(x='Compound Count', y='Target Name', data=target_counts.head(20), palette='viridis', ax = ax)
+    ax.set_title(title)
+    ax.set_xlabel('Number of Compounds')
+    ax.set_ylabel('Target Name')
+
+
+def MW_histplot(data, ax, title, xlim=1500):
+    sns.histplot(data['Molecular Weight'], bins=30, color="skyblue", ax=ax)
+    ax.set_title(title)
+    ax.set_xlabel("Molecular Weight (g/mol)")
+    ax.set_ylabel("Frequency")
+    if xlim:
+        ax.set_xlim(xlim)
+
+# 
+def LogP(data):
+    '''
+    function to visualize the distribution of hydrophobicity value LogP between clusters
+    
+    Parameter: 
+    data(Dataframe): dataframe with LogP value and cluster column
+    '''
+    sns.boxplot(data = data, x= 'Cluster', y= 'logP')
+    medians = data.groupby('Cluster')['logP'].median()
+    for i, median in enumerate(medians):
+        plt.text(i, median + 0.1, f'{median:.2f}', color = 'yellow')
+
+    plt.scatter([], [], color='yellow', label='Median value', marker='o')  # Empty scatter for legend marker
+    plt.legend(loc='upper left')
+
+    plt.title('LogP (hydrophobiciy) for each four clusters')
+    plt.show()
+
+
+    def Stereocenter_percentile(data):
+        '''
+        function to visualize the dstribution of stereocenter percentile according to the drugbank
+
+        parameter:
+        data(Dataframe): dataframe with stereocenter_percentile and cluster column
+
+        '''
+        sns.boxplot(data = data, x= 'Cluster', y= 'stereo_centers_drugbank_approved_percentile')
+        medians = data.groupby('Cluster')['stereo_centers_drugbank_approved_percentile'].median()
+        for i, median in enumerate(medians):
+            plt.text(i, median + 0.1, f'{median:.2f}', color = 'yellow')
+
+        plt.scatter([], [], color='yellow', label='Median value', marker='o')  # Empty scatter for legend marker
+        plt.legend(loc='upper left')
+
+        plt.title('stereo_centers_drugbank_approved_percentile  for each four clusters')
+        plt.show()
+
+    def stereo(data):
+        '''
+         function to visualize the dstribution of stereocenter between the clusters
+
+        parameter:
+        data(Dataframe): dataframe with the number of sterocenter and cluster column
+
+        '''
+        sns.boxplot(data = data, x= 'Cluster', y= 'stereo_centers')
+        medians = data.groupby('Cluster')['stereo_centers'].median()
+        for i, median in enumerate(medians):
+            plt.text(i, median + 0.1, f'{median:.2f}', color = 'yellow')
+
+        plt.scatter([], [], color='yellow', label='Median value', marker='o')  # Empty scatter for legend marker
+        plt.legend(loc='upper left')
+
+        plt.title('number of stereocenters for each four clusters')
+        plt.show()
+
+
+def Lipinski(data):
+    '''
+    function that selects the top 10 drugs according to 4 parameters: Lipinski_score, Ki, Solubility and Toxicity
+
+    parameter:
+    data(Dataframe): dataframe with columns Lipinski, Ki, Solubility_AqSolDB, and CLinTox
+    '''
+
+    scaler = MinMaxScaler(data)
+    data = {'Lipinski_Score': data['Cluster_1']['Lipinski'], 
+            'Ki':data['Cluster_1']['Ki'], 
+            'Solubility': data['Cluster_1']['Solubility_AqSolDB'],
+            'Toxicity': data['Cluster_1']['ClinTox']
+    }
+
+    df = pd.DataFrame(data)
+
+    scaler = MinMaxScaler()
+
+
+
+    # Columns to scale: Lipinski_Score (higher better), Ki (lower better), CYP450 (lower better), Solubility (moderate better)
+    df[['Lipinski_Score', 'Ki', 'Solubility', 'Toxicity']] = scaler.fit_transform(
+        df[['Lipinski_Score', 'Ki', 'Solubility', 'Toxicity']]
+    )
+
+    # Adjust for preference (maximize Lipinski, minimize Ki, minimize CYP450, moderate solubility)
+    df['Normalized_Ki'] = 1 - df['Ki']  # Lower Ki is better
+
+    # Assign weights based on importance
+    weights = {
+        'Lipinski_Score': 0.3,
+        'Normalized_Ki': 0.4,
+        'Solubility': 0.1,
+        'Toxicity': 0.2
+    }
+
+    # Calculate the composite score
+    df['Composite_Score'] = (
+        df['Lipinski_Score'] * weights['Lipinski_Score'] +
+        df['Normalized_Ki'] * weights['Normalized_Ki'] +
+        df['Solubility'] * weights['Solubility']+
+        df['Toxicity'] * weights['Toxicity']
+    )
+
+    top_10 = df.sort_values(by='Composite_Score', ascending=False).head(10)
+
+    print("Indices of the top 10 most promising drugs:", top_10.index.tolist())
+    print("Top 10 drugs data:")
+    print(top_10)
+    return top_10
+
+
+
