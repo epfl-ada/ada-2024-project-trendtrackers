@@ -2,8 +2,7 @@ import numpy as np
 import pandas as pd
 
 from scipy.stats import entropy
-from scipy.stats import shapiro
-from scipy.stats import mannwhitneyu
+from scipy.stats import shapiro, kruskal, mannwhitneyu
 
 
 
@@ -350,6 +349,7 @@ def shapiro_test(data, param, r = 4):
     parameters:
     param(string): name of the column of the dataframe to be tested 
     '''
+    print(f'Shapiro-Wilk test for the parameter: {param}')
     for i in range(4):
         stat, p_value = shapiro(data[f'Cluster_{i}'][param])
 
@@ -370,6 +370,7 @@ def mann_whiteney_test(data1, data2,  sent):
     data2(Dataframe): second dataset to be tested
     sent(string): sentnce describing the datasets tested
     '''
+    print(f'Mann-Whiney U test')
     stat, p_value = mannwhitneyu(data1, data2, alternative='two-sided')
     print(f"Statistic: {stat}, p-value: {p_value}")
 
@@ -377,6 +378,23 @@ def mann_whiteney_test(data1, data2,  sent):
         print("Significant difference between", sent)
     else:
         print("No significant difference between", sent)
+
+def test_kruskal(column_to_check, grouped_dataset):
+    ''' 
+    Perform a Kruskal-Wallis test on column_to_check
+    grouped_dataset: dataset grouped by cluster
+    '''
+    print(f'Kruskal-Wallis test for {column_to_check}.')
+    results = []
+    for _, group in grouped_dataset:
+        column_values = group[column_to_check].values
+        results.append(column_values)
+    stat, p = kruskal(*results)
+    print(f'H-statistic: {stat}, p-value: {p}.')
+    if p > 0.05:
+        print(f'There is no evidence of a significant difference in medians accross the clusters for {column_to_check}.\n')
+    else:
+        print(f'There is a significant difference in the medians of at least one group compared to the other in {column_to_check}.\n')
 
 def extract_info_smiles(data):
     '''
@@ -467,43 +485,43 @@ def LogP(data):
     plt.show()
 
 
-    def Stereocenter_percentile(data):
-        '''
-        function to visualize the dstribution of stereocenter percentile according to the drugbank
+def Stereocenter_percentile(data):
+    '''
+    function to visualize the dstribution of stereocenter percentile according to the drugbank
 
-        parameter:
-        data(Dataframe): dataframe with stereocenter_percentile and cluster column
+    parameter:
+    data(Dataframe): dataframe with stereocenter_percentile and cluster column
 
-        '''
-        sns.boxplot(data = data, x= 'Cluster', y= 'stereo_centers_drugbank_approved_percentile')
-        medians = data.groupby('Cluster')['stereo_centers_drugbank_approved_percentile'].median()
-        for i, median in enumerate(medians):
-            plt.text(i, median + 0.1, f'{median:.2f}', color = 'yellow')
+    '''
+    sns.boxplot(data = data, x= 'Cluster', y= 'stereo_centers_drugbank_approved_percentile')
+    medians = data.groupby('Cluster')['stereo_centers_drugbank_approved_percentile'].median()
+    for i, median in enumerate(medians):
+        plt.text(i, median + 0.1, f'{median:.2f}', color = 'yellow')
 
-        plt.scatter([], [], color='yellow', label='Median value', marker='o')  # Empty scatter for legend marker
-        plt.legend(loc='upper left')
+    plt.scatter([], [], color='yellow', label='Median value', marker='o')  # Empty scatter for legend marker
+    plt.legend(loc='upper left')
 
-        plt.title('stereo_centers_drugbank_approved_percentile  for each four clusters')
-        plt.show()
+    plt.title('stereo_centers_drugbank_approved_percentile  for each four clusters')
+    plt.show()
 
-    def stereo(data):
-        '''
-         function to visualize the dstribution of stereocenter between the clusters
+def stereo(data):
+    '''
+    function to visualize the dstribution of stereocenter between the clusters
 
-        parameter:
-        data(Dataframe): dataframe with the number of sterocenter and cluster column
+    parameter:
+    data(Dataframe): dataframe with the number of sterocenter and cluster column
 
-        '''
-        sns.boxplot(data = data, x= 'Cluster', y= 'stereo_centers')
-        medians = data.groupby('Cluster')['stereo_centers'].median()
-        for i, median in enumerate(medians):
-            plt.text(i, median + 0.1, f'{median:.2f}', color = 'yellow')
+    '''
+    sns.boxplot(data = data, x= 'Cluster', y= 'stereo_centers')
+    medians = data.groupby('Cluster')['stereo_centers'].median()
+    for i, median in enumerate(medians):
+        plt.text(i, median + 0.1, f'{median:.2f}', color = 'yellow')
 
-        plt.scatter([], [], color='yellow', label='Median value', marker='o')  # Empty scatter for legend marker
-        plt.legend(loc='upper left')
+    plt.scatter([], [], color='yellow', label='Median value', marker='o')  # Empty scatter for legend marker
+    plt.legend(loc='upper left')
 
-        plt.title('number of stereocenters for each four clusters')
-        plt.show()
+    plt.title('number of stereocenters for each four clusters')
+    plt.show()
 
 
 def Lipinski(data):
