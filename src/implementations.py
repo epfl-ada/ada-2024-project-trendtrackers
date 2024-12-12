@@ -20,6 +20,8 @@ from sklearn.metrics import silhouette_score
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.preprocessing import StandardScaler
 from sklearn.feature_selection import f_regression
+from sklearn.decomposition import PCA
+from sklearn.preprocessing import StandardScaler
 
 
 from rdkit import Chem
@@ -458,6 +460,15 @@ def clusters_targets(data, ax, title):
 
 
 def MW_histplot(data, ax, title, xlim=1500):
+    '''
+    function that plots a histogramm of the distribution of the molecular weight in the dataset
+
+    parameter:
+    data (Dataframe): dataset containing a column 'Molecular Weight'
+    ax(array): position of the subplot in the figure
+    title (string): title of the plot
+    xlim: x values limit
+    '''
     sns.histplot(data['Molecular Weight'], bins=30, color="skyblue", ax=ax)
     ax.set_title(title)
     ax.set_xlabel("Molecular Weight (g/mol)")
@@ -473,10 +484,10 @@ def LogP(data):
     Parameter: 
     data(Dataframe): dataframe with LogP value and cluster column
     '''
-    sns.boxplot(data = data, x= 'Cluster', y= 'logP')
+    sns.boxplot(data = data, x= 'Cluster', y= 'logP', fill = False)
     medians = data.groupby('Cluster')['logP'].median()
     for i, median in enumerate(medians):
-        plt.text(i, median + 0.1, f'{median:.2f}', color = 'yellow')
+        plt.text(i, median + 0.1, f'{median:.2f}', color = 'black')
 
     plt.scatter([], [], color='yellow', label='Median value', marker='o')  # Empty scatter for legend marker
     plt.legend(loc='upper left')
@@ -493,10 +504,10 @@ def Stereocenter_percentile(data):
     data(Dataframe): dataframe with stereocenter_percentile and cluster column
 
     '''
-    sns.boxplot(data = data, x= 'Cluster', y= 'stereo_centers_drugbank_approved_percentile')
+    sns.boxplot(data = data, x= 'Cluster', y= 'stereo_centers_drugbank_approved_percentile', fill = False)
     medians = data.groupby('Cluster')['stereo_centers_drugbank_approved_percentile'].median()
     for i, median in enumerate(medians):
-        plt.text(i, median + 0.1, f'{median:.2f}', color = 'yellow')
+        plt.text(i, median + 0.1, f'{median:.2f}', color = 'black')
 
     plt.scatter([], [], color='yellow', label='Median value', marker='o')  # Empty scatter for legend marker
     plt.legend(loc='upper left')
@@ -512,10 +523,10 @@ def stereo(data):
     data(Dataframe): dataframe with the number of sterocenter and cluster column
 
     '''
-    sns.boxplot(data = data, x= 'Cluster', y= 'stereo_centers')
+    sns.boxplot(data=data, x= 'Cluster', y= 'stereo_centers', fill= False)
     medians = data.groupby('Cluster')['stereo_centers'].median()
     for i, median in enumerate(medians):
-        plt.text(i, median + 0.1, f'{median:.2f}', color = 'yellow')
+        plt.text(i, median + 0.1, f'{median:.2f}', color = 'black')
 
     plt.scatter([], [], color='yellow', label='Median value', marker='o')  # Empty scatter for legend marker
     plt.legend(loc='upper left')
@@ -524,7 +535,39 @@ def stereo(data):
     plt.show()
 
 
-def Lipinski(data):
+def weight(data):
+    '''
+    function to find the weight refleting the importance of the four properties Lipinski_score, Ki, Solubility and toxicity in a drug discovery
+
+    parameter:
+    data: dataframe containing the properties  
+    '''
+    data = {'Lipinski_Score': data['Cluster_1']['Lipinski'], 
+                'Ki':data['Cluster_1']['Ki'], 
+                'Solubility': data['Cluster_1']['Solubility_AqSolDB'],
+                'Toxicity': data['Cluster_1']['ClinTox']
+        }
+
+    df = pd.DataFrame(data)
+
+    # Standardize the dataset
+    scaler = StandardScaler()
+    standardized_data = scaler.fit_transform(df)
+
+    # Perform PCA
+    pca = PCA()
+    pca.fit(standardized_data)
+
+    # Calculate weights based on explained variance ratio
+    weights = pca.explained_variance_ratio_
+    weights_dict = {col: weight for col, weight in zip(df.columns, weights)}
+
+
+    return weights_dict
+
+
+
+def top10_compound(data, weights):
     '''
     function that selects the top 10 drugs according to 4 parameters: Lipinski_score, Ki, Solubility and Toxicity
 
@@ -540,10 +583,7 @@ def Lipinski(data):
     }
 
     df = pd.DataFrame(data)
-
     scaler = MinMaxScaler()
-
-
 
     # Columns to scale: Lipinski_Score (higher better), Ki (lower better), CYP450 (lower better), Solubility (moderate better)
     df[['Lipinski_Score', 'Ki', 'Solubility', 'Toxicity']] = scaler.fit_transform(
@@ -553,21 +593,15 @@ def Lipinski(data):
     # Adjust for preference (maximize Lipinski, minimize Ki, minimize CYP450, moderate solubility)
     df['Normalized_Ki'] = 1 - df['Ki']  # Lower Ki is better
 
-    # Assign weights based on importance
-    weights = {
-        'Lipinski_Score': 0.3,
-        'Normalized_Ki': 0.4,
-        'Solubility': 0.1,
-        'Toxicity': 0.2
-    }
+    # Step 2: Define a composite score with weights for each parameter
 
     # Calculate the composite score
     df['Composite_Score'] = (
         df['Lipinski_Score'] * weights['Lipinski_Score'] +
-        df['Normalized_Ki'] * weights['Normalized_Ki'] +
+        df['Normalized_Ki'] * weights['Ki'] +
         df['Solubility'] * weights['Solubility']+
         df['Toxicity'] * weights['Toxicity']
-    )
+          )
 
     top_10 = df.sort_values(by='Composite_Score', ascending=False).head(10)
 
