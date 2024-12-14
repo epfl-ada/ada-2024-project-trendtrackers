@@ -13,6 +13,8 @@ from matplotlib.ticker import MaxNLocator
 from mpl_toolkits.mplot3d import Axes3D
 import plotly.express as px
 import plotly.graph_objects as go
+from plotly.subplots import make_subplots
+
 
 from sklearn.manifold import TSNE, trustworthiness
 from sklearn.cluster import KMeans, DBSCAN
@@ -653,6 +655,24 @@ def cluster_similarity(fingerprints_cluster, number_cluster):
     plt.show()
 
     return np.mean(similarities), np.median(similarities)
+
+def cluster_similarity_interactive(fingerprints_cluster, number_cluster):
+    """
+    Function that computes the mean and variance of the Tanimoto similarities in one cluster.
+    It also returns the similarities for plotting.
+    """
+    similarities = []
+    for i in range(len(fingerprints_cluster)):
+        for j in range(i + 1, len(fingerprints_cluster)):
+            similarity = tanimoto_similarities(fingerprints_cluster[i], fingerprints_cluster[j])
+            similarities.append(similarity)
+
+    # Compute statistics
+    mean_similarity = sum(similarities) / len(similarities) if similarities else 0
+    variance_similarity = sum((x - mean_similarity) ** 2 for x in similarities) / len(similarities) if similarities else 0
+
+    return similarities, mean_similarity, variance_similarity
+
 
 def heatmap_similarities(fingerprints, cluster_number):
     '''
