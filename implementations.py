@@ -612,4 +612,57 @@ def top10_compound(data, weights):
     print(top_10)
     return top_10
 
+def generate_fingerprints_similarity(smiles_list):
+    '''
+    Function that generates the Morgan Fingerprints from smiles and returns a list
+    '''
+    fingerprints = []
+    for smi in smiles_list:
+        mol = Chem.MolFromSmiles(smi)
+        if mol:  
+            fp = AllChem.GetMorganFingerprintAsBitVect(mol, radius=2, nBits=2048) 
+            fingerprints.append(fp)
+        else:
+            fingerprints.append(None)
+    return fingerprints
 
+def tanimoto_similarities(fingerprint1, fingerprint2):
+    '''
+    Function that takes to Morgan Fingerprints and returns their Tanimoto similarity
+    '''
+    if fingerprint1 is not None and fingerprint2 is not None:
+        return DataStructs.TanimotoSimilarity(fingerprint1, fingerprint2)
+    else:
+        return 0
+
+def cluster_similarity(fingerprints_cluster, number_cluster):
+    '''
+    Function that computes the mean and variance of the Tanimoto similarities in one cluster. 
+    It also plots the distribution of the similarities.
+    '''
+    similarities = []
+    for i in range(len(fingerprints_cluster)):
+        for j in range (i + 1, len(fingerprints_cluster)):
+            similarity = tanimoto_similarities(fingerprints_cluster[i], fingerprints_cluster[j])
+            similarities.append(similarity)
+    
+    plt.hist(similarities, bins=20, alpha=0.7)
+    plt.xlabel('Tanimoto Similarity')
+    plt.ylabel('Frequency')
+    plt.title(f'Similarity Distribution Cluster {number_cluster}')
+    plt.show()
+
+    return np.mean(similarities), np.median(similarities)
+
+def heatmap_similarities(fingerprints, cluster_number):
+    '''
+    Function that plots the heatmap of pairwise similarities within a cluster
+    '''
+    pairwise_similarities = np.zeros((len(fingerprints), len(fingerprints)))
+    for i in range(len(fingerprints)):
+        for j in range(len(fingerprints)):
+            pairwise_similarities[i, j] = DataStructs.TanimotoSimilarity(fingerprints[i], fingerprints[j])
+
+    sns.heatmap(pairwise_similarities, cmap='viridis', square=True)
+    plt.title(f'Pairwise Similarity Heatmap for Cluster {cluster_number}')
+    plt.show()
