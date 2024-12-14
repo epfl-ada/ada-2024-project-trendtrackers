@@ -26,7 +26,7 @@ from sklearn.preprocessing import StandardScaler
 
 from rdkit import Chem
 from rdkit.Chem import AllChem
-from rdkit.Chem import Descriptors
+from rdkit.Chem import Descriptors, Draw
 from rdkit.Chem.rdFingerprintGenerator import GetMorganGenerator
 from rdkit import DataStructs
 
@@ -665,4 +665,39 @@ def heatmap_similarities(fingerprints, cluster_number):
 
     sns.heatmap(pairwise_similarities, cmap='viridis', square=True)
     plt.title(f'Pairwise Similarity Heatmap for Cluster {cluster_number}')
+    plt.show()
+
+def visualize_drugs(data, cluster, size=5):
+    """
+        
+        Visualizes a specified number of molecules from a given cluster.
+
+            Parameters:
+            - data: Dictionary containing the cluster data. The keys are cluster names (e.g., 'Cluster_0'),
+            and the values are DataFrames with molecular data.
+            - cluster: The name of the cluster (e.g., 'Cluster_0').
+            - num_molecules: The number of molecules to visualize from the cluster. Default is 5.
+
+            Returns:
+            - None: The function displays the plot.
+         
+    """
+    cluster_df = data[cluster]
+    
+    index_cluster = cluster_df.index
+    random_index = np.random.choice(index_cluster, size, replace=False)
+    
+    fig, ax = plt.subplots(1, size, figsize=(15, 15), sharey=True, sharex=True)
+    ax = ax.ravel()
+
+    for idx, random_idx in enumerate(random_index):
+        smiles = cluster_df.loc[random_idx, 'Ligand SMILES']
+        mol = Chem.MolFromSmiles(smiles)
+
+        img = Draw.MolToImage(mol)
+        ax[idx].imshow(img)
+        ax[idx].axis('off')  
+        ax[idx].set_title(f"Molecule {random_idx} from {cluster}")
+
+    plt.tight_layout()
     plt.show()
