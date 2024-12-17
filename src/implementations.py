@@ -13,6 +13,8 @@ from matplotlib.ticker import MaxNLocator
 from mpl_toolkits.mplot3d import Axes3D
 import plotly.express as px
 import plotly.graph_objects as go
+from plotly.subplots import make_subplots
+
 
 from sklearn.manifold import TSNE, trustworthiness
 from sklearn.cluster import KMeans, DBSCAN
@@ -26,13 +28,15 @@ from sklearn.preprocessing import StandardScaler
 
 from rdkit import Chem
 from rdkit.Chem import AllChem
-from rdkit.Chem import Descriptors
+from rdkit.Chem import Descriptors, Draw
 from rdkit.Chem.rdFingerprintGenerator import GetMorganGenerator
+from rdkit import DataStructs
+
 
 from transformers import AutoTokenizer, AutoModel
 import torch
 import umap
-
+import os 
 
 
 def generate_fingerprints(smiles_list, radius=3, n_bits=1024):
@@ -610,5 +614,110 @@ def top10_compound(data, weights):
     print(top_10)
     return top_10
 
+def generate_fingerprints_similarity(smiles_list):
+    '''
+    Function that generates the Morgan Fingerprints from smiles and returns a list
+    '''
+    fingerprints = []
+    for smi in smiles_list:
+        mol = Chem.MolFromSmiles(smi)
+        if mol:  
+            fp = AllChem.GetMorganFingerprintAsBitVect(mol, radius=2, nBits=2048) 
+            fingerprints.append(fp)
+        else:
+            fingerprints.append(None)
+    return fingerprints
 
+def tanimoto_similarities(fingerprint1, fingerprint2):
+    '''
+    Function that takes to Morgan Fingerprints and returns their Tanimoto similarity
+    '''
+    if fingerprint1 is not None and fingerprint2 is not None:
+        return DataStructs.TanimotoSimilarity(fingerprint1, fingerprint2)
+    else:
+        return 0
+
+def cluster_similarity(fingerprints_cluster, number_cluster):
+    '''
+    Function that computes the mean and variance of the Tanimoto similarities in one cluster. 
+    It also plots the distribution of the similarities.
+    '''
+    similarities = []
+    for i in range(len(fingerprints_cluster)):
+        for j in range (i + 1, len(fingerprints_cluster)):
+            similarity = tanimoto_similarities(fingerprints_cluster[i], fingerprints_cluster[j])
+            similarities.append(similarity)
+    
+    plt.hist(similarities, bins=20, alpha=0.7)
+    plt.xlabel('Tanimoto Similarity')
+    plt.ylabel('Frequency')
+    plt.title(f'Similarity Distribution Cluster {number_cluster}')
+    plt.show()
+
+    return np.mean(similarities), np.median(similarities)
+
+def cluster_similarity_interactive(fingerprints_cluster, number_cluster):
+    """
+    Function that computes the mean and variance of the Tanimoto similarities in one cluster.
+    It also returns the similarities for plotting.
+    """
+    similarities = []
+    for i in range(len(fingerprints_cluster)):
+        for j in range(i + 1, len(fingerprints_cluster)):
+            similarity = tanimoto_similarities(fingerprints_cluster[i], fingerprints_cluster[j])
+            similarities.append(similarity)
+
+    # Compute statistics
+    mean_similarity = sum(similarities) / len(similarities) if similarities else 0
+    variance_similarity = sum((x - mean_similarity) ** 2 for x in similarities) / len(similarities) if similarities else 0
+
+    return similarities, mean_similarity, variance_similarity
+
+def heatmap_similarities(fingerprints, cluster_number):
+    '''
+    Function that plots the heatmap of pairwise similarities within a cluster
+    '''
+    pairwise_similarities = np.zeros((len(fingerprints), len(fingerprints)))
+    for i in range(len(fingerprints)):
+        for j in range(len(fingerprints)):
+            pairwise_similarities[i, j] = DataStructs.TanimotoSimilarity(fingerprints[i], fingerprints[j])
+
+    sns.heatmap(pairwise_similarities, cmap='viridis', square=True)
+    plt.title(f'Pairwise Similarity Heatmap for Cluster {cluster_number}')
+    plt.show()
+
+def visualize_drugs(data, cluster, size=5):
+    """
+        
+        Visualizes a specified number of molecules from a given cluster.
+
+            Parameters:
+            - data: Dictionary containing the cluster data. The keys are cluster names (e.g., 'Cluster_0'),
+            and the values are DataFrames with molecular data.
+            - cluster: The name of the cluster (e.g., 'Cluster_0').
+            - num_molecules: The number of molecules to visualize from the cluster. Default is 5.
+
+            Returns:
+            - None: The function displays the plot.
+         
+    """
+    cluster_df = data[cluster]
+    
+    index_cluster = cluster_df.index
+    random_index = np.random.choice(index_cluster, size, replace=False)
+    
+    fig, ax = plt.subplots(1, size, figsize=(15, 15), sharey=True, sharex=True)
+    ax = ax.ravel()
+
+    for idx, random_idx in enumerate(random_index):
+        smiles = cluster_df.loc[random_idx, 'Ligand SMILES']
+        mol = Chem.MolFromSmiles(smiles)
+
+        img = Draw.MolToImage(mol)
+        ax[idx].imshow(img)
+        ax[idx].axis('off')  
+        ax[idx].set_title(f"Molecule {random_idx} from {cluster}")
+
+    plt.tight_layout()
+    plt.show()
 
