@@ -300,8 +300,58 @@ def plot_cluster_distributions(
     plt.tight_layout()
     plt.show()
 
+def plot_error_histogram(predictions, y_test, title="Test Error of Random Assignment", xlabel="Absolute Error of Log Ki", save_path=None):
+    """
+    Function to plot a histogram of the absolute percentage error with log scale on the x-axis.
+    
+    Parameters:
+    - predictions: ndarray
+        The predicted values (1D array).
+    - y_test: ndarray
+        The true values (1D array).
+    - title: str, optional
+        The title of the plot (default: 'Test Error of Random Assignment').
+    - xlabel: str, optional
+        The label for the x-axis (default: 'Absolute Percentage Error').
+    - save_path: str, optional
+        The path to save the figure as an HTML file (default: None, meaning no save).
+    """
 
-def plot_3d_clusters(results, min_index, k, method_name):
+    error = np.abs(predictions.ravel() - y_test.ravel())
+
+    error = error[np.isfinite(error)]
+
+    fig = px.histogram(
+        x=error,
+        nbins=100, 
+        labels={'x': xlabel},
+        title=title
+    )
+
+    fig.update_layout(
+        title=dict(text=title, x=0.5, font=dict(size=20)),
+        xaxis=dict(
+            title=xlabel,
+            tickfont=dict(size=12)
+        ),
+        yaxis=dict(
+            title='Count',
+            tickfont=dict(size=12)
+        ),
+        font=dict(size=12),
+        width=1000,
+        height=600
+    )
+
+    fig.show()
+
+    if save_path:
+        if not save_path.endswith(".html"):
+            save_path += ".html" 
+        fig.write_html(save_path, full_html=False, include_plotlyjs='cdn')
+        print(f"Figure saved to {save_path}")
+
+def plot_3d_clusters(results, min_index, k, method_name, save=False, save_path='cluster_map'):
     """
     Function to create a 3D interactive scatter plot with clusters based on dimensionality reduction results.
 
@@ -311,13 +361,12 @@ def plot_3d_clusters(results, min_index, k, method_name):
         k (int): Number of clusters for KMeans.
         method_name (str): Name of the method (e.g., 'TSNE' or 'UMAP') for labeling axes.
     """
-    # KMeans clustering on the selected result
+
     kmeans = KMeans(n_clusters=k, random_state=42)
     kmeans.fit(results[min_index[0]][min_index[1]])
     df = pd.DataFrame(results[min_index[0]][min_index[1]], columns=[f'{method_name}1', f'{method_name}2', f'{method_name}3'])
     df['Cluster'] = kmeans.labels_
 
-    # Create 3D scatter plot
     fig = go.Figure()
     scatter = go.Scatter3d(
         x=df[f'{method_name}1'],
@@ -328,7 +377,6 @@ def plot_3d_clusters(results, min_index, k, method_name):
     )
     fig.add_trace(scatter)
 
-    # Customize layout
     fig.update_layout(
         title=f"{method_name} Clusters",
         scene=dict(
@@ -343,9 +391,12 @@ def plot_3d_clusters(results, min_index, k, method_name):
         template="plotly_white"
     )
 
-    # Display the figure
     fig.show()
-
+    if save:
+        if not save_path.endswith(".html"):
+            save_path += ".html" 
+        fig.write_html(save_path, full_html=False, include_plotlyjs='cdn')
+        print(f"Figure saved to {save_path}")
     return df
 
 def shapiro_test(data, param, r = 4):
@@ -436,12 +487,10 @@ def extract_info_smiles(data):
             h_bond_donors.append(None)
             h_bond_acceptors.append(None)
 
-    # Add properties to DataFrame
     data['Molecular Weight'] = molecular_weights
     data['H-Bond Donors'] = h_bond_donors
     data['H-Bond Acceptors'] = h_bond_acceptors
 
-    # Drop rows with any missing values in these new columns
     data.dropna(subset=['Molecular Weight', 'H-Bond Donors', 'H-Bond Acceptors'], inplace=True)
 
 
@@ -480,7 +529,7 @@ def MW_histplot(data, ax, title, xlim=1500):
     if xlim:
         ax.set_xlim(xlim)
 
-# 
+
 def LogP(data):
     '''
     function to visualize the distribution of hydrophobicity value LogP between clusters
@@ -554,11 +603,9 @@ def weight(data):
 
     df = pd.DataFrame(data)
 
-    # Standardize the dataset
     scaler = StandardScaler()
     standardized_data = scaler.fit_transform(df)
 
-    # Perform PCA
     pca = PCA()
     pca.fit(standardized_data)
 
@@ -596,8 +643,6 @@ def top10_compound(data, weights):
 
     # Adjust for preference (maximize Lipinski, minimize Ki, minimize CYP450, moderate solubility)
     df['Normalized_Ki'] = 1 - df['Ki']  # Lower Ki is better
-
-    # Step 2: Define a composite score with weights for each parameter
 
     # Calculate the composite score
     df['Composite_Score'] = (
