@@ -35,11 +35,11 @@ HIV-1 remains a significant global health challenge, and developing effective in
 
 ## Research questions
 
-- What are the most studied targets in academy and in industry ?
-- Can we find families of ligand that inhibits HIV1 and what are their properties ?
-- Can we predict the affinity of new ligands ?
-- Are the affinity of ligands within the same clusters similar in values ?
-- With the characteristics we obtain from the clusters, can we generate new ligands?
+- What are the most studied targets in academy and in industry?
+- Can we find families of ligand that inhibits HIV1 and what are their properties?
+- What are the different properties of each cluster and how they differ from each other?
+- Can we find characteristics which make it a good inhibitor?
+- Can we predict the affinity of new ligands?
 
 ## Methods
 
@@ -49,35 +49,21 @@ In this project, we aim to apply clustering techniques to explore the properties
 
 We experimented with various approaches to numerically represent ligands, including generating Morgan fingerprints from SMILES strings with the [RDKit](https://www.rdkit.org/) library and utilising embeddings from the [ChemBERTa](https://huggingface.co/seyonec/ChemBERTa-zinc-base-v1) model. These molecular structure representations are then processed using dimension reduction techniques like t-SNE and UMAP combined with KMeans to visualise and identify clusters effectively. 
 
-### Next Steps
+### Analysis
 
-Our next steps will involve analysing the properties of each cluster, focusing on aspects such as molecular structure similarity, molecular weight, hydrogen bonding potential, and binding affinity, both visually and quantitatively. This analysis aims to uncover relationships between ligand structures and their key properties, helping us understand which structural features correlate with binding efficacy.
+We analysed the properties of each cluster, focusing on aspects such as molecular structure similarity, molecular weight, hydrogen bonding potential, and binding affinity, both visually and quantitatively. This analysis helped us uncover relationships between ligand structures and their key properties, helping us understand which structural features correlate with binding efficacy.
 
-We will also assess the effectiveness of our clustering methods in forming distinct and meaningful groups that align with observed binding affinities.
+### Predictive Model
 
-In parallel, we plan to develop a predictive machine learning model to estimate binding affinity (inhibitory constant Ki) for a given ligand-protein pair. To encode proteins, we will leverage [ProteinBERT](https://github.com/nadavbra/protein_bert) to extract numerical features. We will experiment with models such as random forests and neural networks to identify the best approach for accurate affinity prediction.
+We trained predictive machine learning models to estimate binding affinity (inhibitory constant Ki) for a given ligand for Gag-Pol Polyprotein. To encode proteins, we leveraged [ProteinBERT](https://github.com/nadavbra/protein_bert) to extract numerical features. We experimented with different models such as random forests and neural networks to identify the best approach for accurate affinity prediction.
 
-If time permits, we would also explore reverse-engineering ligands by leveraging the prediction power of our machine learning model as a metric, combined with a new generative model. This approach involves generating the structures of optimal ligands with potentially high binding affinity for a given set of targets. The newly generated ligands can then be visualized using ChemDraw or the visualization tools available in [RDKit](https://www.rdkit.org/).
+## Contribution
 
-## Timeline
-
-- Week 10: More visualisations on the properties and their correlations to check the similarity of the compounds in each cluster (affinity, hydrogen bonds, hydrophobicity, inhibitory effects etc).
-- Week 11: Building, training and testing predictive ML model.
-- Week 12:
-     * Test if a ligand family could target the same target with similar affinity values with the predictive model developed.
-     * Analyse the properties of each cluster (structure, molecular weight, h-bonds, ...)
-- Week 13:
-     * Setting up the website
-     * Choose the visualisations to show
-     * Begin the text for the datastory        
-- Week 14:
-     * Improve results and work on the website to display our data story.
-
-## Organisation
-
-- Clustering and visualisation of the properties of clusters: Nithujaa, Leonardo, Emma
-- Predictive Model and Generative Model: Antonin, Sathvik
+- Clustering: Antonin, Sathvik, Nithujaa, Leonardo, Emma
+- Analysis of the clusters: Nithujaa, Leonardo, Emma
+- Predictive Model: Antonin, Sathvik
 - Story: Emma, Nithujaa, Leonardo, Antonin, Sathvik
+- Website: Sathvik
 
 ## Website
 
