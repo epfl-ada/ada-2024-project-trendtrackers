@@ -40,24 +40,24 @@ def split_by_labels(df, n_split):
     return reconcatenated_df, splits[-1]
 
 
-class Double_Net(torch.nn.Module):
+class Triple_Net(torch.nn.Module):
 
     def __init__(self, input_size, K, dropout_rate=0.5):
-        super(Double_Net, self).__init__()
+        super(Triple_Net, self).__init__()
         self.network = torch.nn.Sequential(
             torch.nn.Linear(input_size, K), 
             torch.nn.BatchNorm1d(K),         
-            torch.nn.ReLU(),                  
+            torch.nn.LeakyReLU(),                  
             torch.nn.Dropout(dropout_rate),    
             
             torch.nn.Linear(K, K),       
             torch.nn.BatchNorm1d(K),         
-            torch.nn.ReLU(),                   
+            torch.nn.LeakyReLU(),                   
             torch.nn.Dropout(dropout_rate),    
             
             torch.nn.Linear(K, K),       
             torch.nn.BatchNorm1d(K),         
-            torch.nn.ReLU(),                   
+            torch.nn.LeakyReLU(),                   
             torch.nn.Dropout(dropout_rate), 
 
             torch.nn.Linear(K, 1),
