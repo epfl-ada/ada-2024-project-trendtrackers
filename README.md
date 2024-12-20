@@ -79,8 +79,6 @@ If time permits, we would also explore reverse-engineering ligands by leveraging
 - Predictive Model and Generative Model: Antonin, Sathvik
 - Story: Emma, Nithujaa, Leonardo, Antonin, Sathvik
 
-## Questions for the TA:
+## Website
 
-- Are the current results of clustering promising or do we have to finetune our clustering process?
-- As the data for HIV is quite small, should we find some external dataset for validating our model?
-- Targets can have more than one chain. In the scope of a machine learning model, should we just concatenate the chains together or consider them as separate parameters?
+You can find our data story on our [Website](https://trendtrackers.github.io/).
