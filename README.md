@@ -20,13 +20,15 @@ Note:
 
 ```markdown
 .
-├── README.md                  # The following README :)
-├── results.ipynb              # Initial analyses, clustering and visualisations
+├── README.md                        # The following README :)
+├── results.ipynb                    # All the analyses, clustering, predictive modeling, visualisations
+├── labeled_data/                    # Preprocessed data for ease of importing
 ├── src/
-    ├── implementations.py     # Python file with helper functions
-├── test/                      # Test folder - using for saved plots (for now)
-├── requirements.txt           # Python packages required to run the code
-├── .gitignore                 # Git ignore file
+    ├── implementations.py           # Python file with helper functions
+    ├── model_implementations.py     # Python file for affinity predictive model implementations
+├── plots/                           # Using for saved plots
+├── requirements.txt                 # Python packages required to run the code
+├── .gitignore                       # Git ignore file
 ```
 
 ## Abstract
