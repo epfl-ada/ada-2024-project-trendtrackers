@@ -57,7 +57,7 @@ We analysed the properties of each cluster, focusing on aspects such as molecula
 
 We trained predictive machine learning models to estimate binding affinity (inhibitory constant Ki) for a given ligand for Gag-Pol Polyprotein. To encode proteins, we leveraged [ProteinBERT](https://github.com/nadavbra/protein_bert) to extract numerical features. We experimented with different models such as random forests and neural networks to identify the best approach for accurate affinity prediction.
 
-## Contribution
+## Contributions
 
 - Clustering: Antonin, Sathvik, Nithujaa, Leonardo, Emma
 - Analysis of the clusters: Nithujaa, Leonardo, Emma
